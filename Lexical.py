@@ -1,7 +1,12 @@
 class Lexical(object):
 
-    def __init__(self):
+    #def get_file(self):
 
+
+    def __init__(self,path):
+
+        self.buffer = list()
+        self.path = path
         self.symbols = {
             # Alphabet lower case
             'a':'L','b':'L','c':'L','L':'L','e':'e','f':'L','g':'L','h':'L','i':'L','j':'L','k':'L','l':'L',
@@ -14,7 +19,7 @@ class Lexical(object):
             # Dumbers
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
-            '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=';'=','>':'>','<':'<','*':'*',
+            '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=','>':'>','<':'<','*':'*',
             '/':'/',';':';','(':'(',')':')'
         }
 
@@ -48,19 +53,19 @@ class Lexical(object):
             4:{'D':5},
             5:{'D':5}, # final
             6:{'D':6},6:{'E':3},6:{'e':3}, # final
-            7:
-            8:
+            #7:
+            #8:
             #9: # final
             10:{'L':10},10:{'D':10},10:{'_':10}, # final
-            11:
-            12:
+            #11:
+            #12:
             #13: # final
-            14:
+            #14:
             15:{'-':21},15:{'=':17},15:{'>':16}, # final
             #16: # final
             #17: # final
             #18: # final
-            19:{'=':20}, # final
+            19:{'=':20} # final
             #20: # final
             #21: # final
             #22: # final
@@ -69,5 +74,12 @@ class Lexical(object):
             #25: # final
         }
 
-w = '>'
-print(table[w])
+f = open('source.txt', 'r')
+content = f.read()
+for letter in content:
+   print(letter)
+#print(repr(content)) # raw file
+f.close()
+
+#w = '>'
+#print(table[w])

@@ -21,19 +21,19 @@ symbols = {
 
 states = {
     1: ['Num','int'],    # final
-    2:"Lexical error",
-    3:"Lexical error",
-    4:"Lexical error",
+    2:"Lexical error",   # TODO
+    3:"Lexical error",   # TODO
+    4:"Lexical error",   # TODO
     5: ['Num',''],       # final
     6: ['Num','float'],  # final
-    7:"Lexical error",
-    8:"Lexical error",
+    7:"Lexical error",   # TODO
+    8:"Lexical error",   # TODO
     9: ['Literal',''],   # final
     10:['id',''],        # final
-    11:"Lexical error",
-    12:"Lexical error",
+    11:"Lexical error",  # TODO
+    12:"Lexical error",  # TODO
     13:['Comentario',''],# final
-    14:"Lexical error",
+    14:"Lexical error",  # TODO
     15:['OPR',''],       # final
     16:['OPR',''],       # final
     17:['OPR',''],       # final
@@ -98,12 +98,13 @@ for words in lines:
             buffer += letter
             symbol = symbols[letter]
             state = table[state][symbol]
-            print("Letra: "+letter)
+            #print(letter)
             print(buffer)
         except:
+            print(states[state])
             buffer = ""
             state = 0
-            print(states[state])
+
     #buffer = ""
 
 #print(repr(content)) # raw file

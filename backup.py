@@ -79,7 +79,7 @@ class Lexical(object):
             19: {'=':20}, # final
             #20: # final
             #21: # final
-            #22:  # final
+            #22: # final
             #23: # final
             #24: # final
             #25: # final
@@ -90,7 +90,7 @@ class Lexical(object):
         self.f = open(path, 'r')
         self.content = self.f.read()
         self.content = self.content.replace(' \n','\n') # Remove uselles spaces
-        print(repr(self.content)) # raw file
+        #print(repr(self.content)) # raw file
 
     # --------------------Analyze the sorce file--------------------------------
     def analyze(self):
@@ -136,5 +136,5 @@ class Lexical(object):
     # ---------------------Return the next token of the list--------------------
     def next_token(self):
         if(self.error == False):        # Verify if there is an error
-            return self.tokens.pop(0)
+            return self.tokens.pop()
         else: return "error"

@@ -1,3 +1,4 @@
+import re
 
 class Lexical(object):
 
@@ -8,6 +9,7 @@ class Lexical(object):
         self.state = 0
         self.tokens = list()
         self.error = False
+        self.token = ""
 
 
         # Table of symbols capable to read
@@ -24,7 +26,7 @@ class Lexical(object):
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
             '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=','>':'>','<':'<','*':'*',
-            '/':'/',';':';','(':'(',')':')'
+            '/':'/',';':';','(':'(',')':')',' ':' '
         }
         # Table of outputs
         self.states = {
@@ -57,29 +59,29 @@ class Lexical(object):
         # Table of transitions
         self.table = {
             0: {'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
-        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22},
-            1: {'D':1, 'E':3, 'e':3, '.':2}, # final
-            2: {'D':6 },
-            3: {'+':4, '-':4, 'D':5 },
-            4: {'D':5 },
+        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,' ':0},
+            1: {'D':1, 'E':3, 'e':3, '.':2,' ':0}, # final
+            2: {'D':6 ,' ':0},
+            3: {'+':4, '-':4, 'D':5 ,' ':0},
+            4: {'D':5,' ':0 },
             5: {'D':5}, # final
-            6: {'D':6, 'E':3, 'e':3}, # final
-            7:{'\"':9},
-            8:{'\"':9},
+            6: {'D':6, 'E':3, 'e':3,' ':0}, # final
+            7:{'\"':9,' ':0},
+            8:{'\"':9,' ':0},
             #9: # final
-            10: {'L':10, 'D':10, 'e':10,'E':10 , '_':10}, # final
-            11:{'}':13},
-            12:{'}':13},
+            10: {'L':10, 'D':10, 'e':10,'E':10 , '_':10,' ':0}, # final
+            11:{'}':13,' ':0},
+            12:{'}':13,' ':0},
             #13: # final
             #14:
-            15: {'-':21, '=':17, '>':16}, # final
+            15: {'-':21, '=':17, '>':16,' ':0}, # final
             #16: # final
             #17: # final
             #18: # final
-            19: {'=':20}, # final
+            19: {'=':20,' ':0}, # final
             #20: # final
             #21: # final
-            #22:  # final
+            #22: # final
             #23: # final
             #24: # final
             #25: # final
@@ -90,7 +92,7 @@ class Lexical(object):
         self.f = open(path, 'r')
         self.content = self.f.read()
         self.content = self.content.replace(' \n','\n') # Remove uselles spaces
-        print(repr(self.content)) # raw file
+
 
     # --------------------Analyze the sorce file--------------------------------
     def analyze(self):
@@ -98,11 +100,18 @@ class Lexical(object):
         #words = lines.split()
         for words in self.content:
             words = words.replace('\n',' ') # Remove end lines \n
+            #print(repr(words)) # raw file
             for letter in words:
                 try:
-                    self.classify(letter)
+                    if(self.state == 0):
+                        self.token = self.states[self.state][:]  # Make a copy of a list
+                        self.make_list(self.token)
+                    else: self.classify(letter)
                 except:
-                    self.make_list()
+                    if(self.token[:7] == "Lexical"):
+                        print(self.token + str(self.buffer))
+                        self.error = True               # Lexical error
+
         print("tokens: "+str(self.tokens))
         self.f.close()
 
@@ -110,7 +119,7 @@ class Lexical(object):
     def classify(self,letter):
         #print(self.state)
         self.buffer += letter                       # Make a buffer
-        self.buffer = self.buffer.replace(' ','')   # Remove uselles spaces
+        #self.buffer = self.buffer.replace(' ','')   # Remove uselles spaces
         if not (self.state == 7) or (self.state == 8) or (self.state == 11) or (self.state == 12):
             symbol = self.symbols[letter]               # Verify the symbols
             self.state = self.table[self.state][symbol] # Verify the states
@@ -120,21 +129,17 @@ class Lexical(object):
             self.state = self.table[self.state][symbol] # Verify the states
 
     # -------------Make the list of tokens or return erro-----------------------
-    def make_list(self):
-        token = self.states[self.state][:]  # Make a copy of a list
-        if(token[:7] == "Lexical"):
-            print(token + str(self.buffer))
-            self.error = True               # Lexical error
-        else:
-            #print("buffer: "+str(self.buffer))
-            token.append(self.buffer)
-            self.tokens.append(token)
-            #print("token: "+str(token))
+    def make_list(self,token):
+        #token = self.states[self.state][:]  # Make a copy of a list
+        #print("buffer: "+str(self.buffer))
+        token.append(self.buffer)
+        self.tokens.append(self.token)
+        #print("token: "+str(token))
         self.buffer = ""
         self.state = 0
 
     # ---------------------Return the next token of the list--------------------
     def next_token(self):
         if(self.error == False):        # Verify if there is an error
-            return self.tokens.pop(0)
+            return self.tokens.pop(0)   # Remove and return the first element
         else: return "error"

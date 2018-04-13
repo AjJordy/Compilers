@@ -3,12 +3,10 @@ class Lexical(object):
 
     def __init__(self):
         # Initialize variables
-
         self.buffer = ""
         self.state = 0
         self.tokens = list()
         self.error = False
-
 
         # Table of symbols capable to read
         self.symbols = {
@@ -24,7 +22,7 @@ class Lexical(object):
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
             '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=','>':'>','<':'<','*':'*',
-            '/':'/',';':';','(':'(',')':')'
+            '/':'/',';':';','(':'(',')':')',' ':'end'
         }
         # Table of outputs
         self.states = {
@@ -58,38 +56,38 @@ class Lexical(object):
         self.table = {
             0: {'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
         		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22},
-            1: {'D':1, 'E':3, 'e':3, '.':2}, # final
+            1: {'D':1, 'E':3, 'e':3, '.':2,'end':1}, # final
             2: {'D':6 },
             3: {'+':4, '-':4, 'D':5 },
             4: {'D':5 },
-            5: {'D':5}, # final
-            6: {'D':6, 'E':3, 'e':3}, # final
+            5: {'D':5,'end':5}, # final
+            6: {'D':6, 'E':3, 'e':3,'end':6}, # final
             7:{'\"':9},
             8:{'\"':9},
-            #9: # final
-            10: {'L':10, 'D':10, 'e':10,'E':10 , '_':10}, # final
+            9:{'end':9}, # final
+            10: {'L':10, 'D':10, 'e':10,'E':10 , '_':10,'end':10}, # final
             11:{'}':13},
             12:{'}':13},
-            #13: # final
+            13:{'end':13}, # final
             #14:
-            15: {'-':21, '=':17, '>':16}, # final
-            #16: # final
-            #17: # final
-            #18: # final
-            19: {'=':20}, # final
-            #20: # final
-            #21: # final
-            #22:  # final
-            #23: # final
-            #24: # final
-            #25: # final
+            15: {'-':21, '=':17, '>':16,'end':15}, # final
+            16:{'end':16}, # final
+            17:{'end':17}, # final
+            18:{'end':18}, # final
+            19:{'=':20,'end':19}, # final
+            20:{'end':20}, # final
+            21:{'end':21}, # final
+            22:{'end':22}, # final
+            23:{'end':23}, # final
+            24:{'end':24}, # final
+            25:{'end':25} # final
         }
 
     # ------------------------Get the source file-------------------------------
     def get_file(self,path):
         self.f = open(path, 'r')
         self.content = self.f.read()
-        self.content = self.content.replace(' \n','\n') # Remove uselles spaces
+        self.content = self.content.replace("\n"," \n ") # Remove uselles spaces
         print(repr(self.content)) # raw file
 
     # --------------------Analyze the sorce file--------------------------------
@@ -97,44 +95,28 @@ class Lexical(object):
         #lines = content.splitlines()
         #words = lines.split()
         for words in self.content:
-            words = words.replace('\n',' ') # Remove end lines \n
+            #words = words.replace('\n',' ') # Remove end lines \n
             for letter in words:
                 try:
-                    self.classify(letter)
+                    self.buffer += letter                       # Make a buffer
+                    self.buffer = self.buffer.replace(' ','')   # Remove uselles spaces
+                    symbol = self.symbols[letter]               # Verify the symbols
+                    self.state = self.table[self.state][symbol] # Verify the states
+                    token = self.states[self.state][:]
+                    if (symbol == 'end'):
+                        token.append(self.buffer)
+                        self.tokens.append(token)
                 except:
-                    self.make_list()
+                    if(token[:7] == "Lexical"):
+                        print(token +str(self.buffer))
+
+            self.buffer = ""
+            self.state = 0
         print("tokens: "+str(self.tokens))
         self.f.close()
-
-    # -----------------------Classify the token---------------------------------
-    def classify(self,letter):
-        #print(self.state)
-        self.buffer += letter                       # Make a buffer
-        self.buffer = self.buffer.replace(' ','')   # Remove uselles spaces
-        if not (self.state == 7) or (self.state == 8) or (self.state == 11) or (self.state == 12):
-            symbol = self.symbols[letter]               # Verify the symbols
-            self.state = self.table[self.state][symbol] # Verify the states
-            #print(self.buffer)
-        else:
-            symbol = letter
-            self.state = self.table[self.state][symbol] # Verify the states
-
-    # -------------Make the list of tokens or return erro-----------------------
-    def make_list(self):
-        token = self.states[self.state][:]  # Make a copy of a list
-        if(token[:7] == "Lexical"):
-            print(token + str(self.buffer))
-            self.error = True               # Lexical error
-        else:
-            #print("buffer: "+str(self.buffer))
-            token.append(self.buffer)
-            self.tokens.append(token)
-            #print("token: "+str(token))
-        self.buffer = ""
-        self.state = 0
 
     # ---------------------Return the next token of the list--------------------
     def next_token(self):
         if(self.error == False):        # Verify if there is an error
-            return self.tokens.pop(0)
+            return self.tokens.pop(0)   # Remove and return the first element
         else: return "error"

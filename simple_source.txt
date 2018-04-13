@@ -1,4 +1,5 @@
 primeira linha
 segunda linha >
+
 = 3.56e+34
 fim de arquivo

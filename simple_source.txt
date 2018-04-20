@@ -1,5 +1,6 @@
 primeira linha
 segunda linha >
+    teste tab;
 
-= 3.56e+34
-fim de arquivo
+= 3.56e+
+fim de   arquivo

@@ -1,6 +1,8 @@
 primeira linha
-segunda linha >
+segunda + linha >
+testando especiais
     teste tab;
 
-= 3.56e+
+= <> + /
+testando underline_teste
 fim de   arquivo

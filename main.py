@@ -1,8 +1,6 @@
 from Lexical import Lexical
-#from Backup import Backup
 
 def main():
-    #lx = Backup()
     lx = Lexical()
     lx.get_file('simple_source.txt')
     lx.analyze()

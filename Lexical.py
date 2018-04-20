@@ -27,20 +27,12 @@ class Lexical(object):
         }
         # Table of outputs
         self.states = {
-            1: ['Num','int'],    # final
-            2:"Lexical error, invalid format in float number, put some numbers after dot, at ",
-            3:"Lexical error, invalid format in exponential number, put some number after \"e\" or \"E\", at ",
-            4:"Lexical error, invalid format in exponential number, put some number after \"+\" or \"-\", at ",
+            1: ['Num','int'],         # final
             5: ['Num','exponential'], # final
             6: ['Num','float'],       # final
-            7:"Lexical error, you need to close \" at ",
-            8:"Lexical error, you need to close \" at ",
             9: ['Literal'],           # final
             10:['id'],                # final
-            11:"Lexical error, you need to close } at ",
-            12:"Lexical error, you need to close } at ",
             13:['Comentario',''],     # final
-            #14:"Lexical error",
             15:['OPR'], # final
             16:['OPR'], # final
             17:['OPR'], # final
@@ -53,6 +45,19 @@ class Lexical(object):
             24:['FC_P'],# final
             25:['PT_V'] # final
         }
+
+        # Table of errors
+        self.errors = {
+            2:"Lexical error, invalid format in float number, put some numbers after dot at ",
+            3:"Lexical error, invalid format in exponential number, put some number after \"e\" or \"E\", at ",
+            4:"Lexical error, invalid format in exponential number, put some number after \"+\" or \"-\", at ",
+            7:"Lexical error, you need to close \" at ",
+            8:"Lexical error, you need to close \" at ",
+            11:"Lexical error, you need to close } at ",
+            12:"Lexical error, you need to close } at "
+            #14:"Lexical error",
+        }
+
         # Table of transitions
         self.table = {
             0: {'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
@@ -71,17 +76,17 @@ class Lexical(object):
             12:{'}':13},
             #13: # final
             #14:
-            #15: {'-':21, '=':17, '>':16}, # final
-            #16:{'end':16}, # final
-            #17:{'end':17}, # final
-            #18:{'end':18}, # final
-            19:{'=':20}, # final
-            #20:{'end':20}, # final
-            #21:{'end':21}, # final
-            #22:{'end':22}, # final
-            #23:{'end':23}, # final
-            #24:{'end':24}, # final
-            #25:{'end':25} # final
+            15: {'-':21, '=':17, '>':16}, # final
+            #16: # final
+            #17: # final
+            #18: # final
+            19:{'=':20} # final
+            #20: # final
+            #21: # final
+            #22: # final
+            #23: # final
+            #24: # final
+            #25: # final
         }
 
     # ------------------------Get the source file-------------------------------
@@ -104,35 +109,82 @@ class Lexical(object):
         self.content = self.content.replace(")"," ) ")
 
     # --------------------Analyze the sorce file--------------------------------
+    # def analyze(self):
+    #     count_line = 1
+    #     error = False
+    #     source = self.content.splitlines()
+    #     for line in source:
+    #         line = line.split()
+    #         #print(line)
+    #         for word in line:
+    #             for letter in word:
+    #                 self.buffer += letter # Make a buffer
+    #                 try:
+    #                     symbol = self.symbols[letter] # Verify the symbols
+    #                     try:
+    #                         self.state = self.table[self.state][symbol] # Verify the states
+    #                         token = self.states[self.state][:] # Verify token
+    #                         print("buffer: "+self.buffer)
+    #                         # print("state: "+str(self.state))
+    #                     except:
+    #                         print("\n"+self.errors[self.state]+self.buffer+" in line "+str(count_line)+"\n")
+    #                         error = True
+    #                         return None
+    #                 except:
+    #                     print("\n"+letter+" is a invalid symbol in line "+str(count_line)+"\n")
+    #                     error = True
+    #                     return None
+    #             if not(error):
+    #                 token.append(self.buffer)
+    #                 self.tokens.append(token)
+    #                 self.buffer = ""
+    #                 self.state = 0
+    #         count_line += 1
+    #     print("tokens: "+str(self.tokens))
+    #     self.f.close()
+
+    # --------------------Analyze the sorce file--------------------------------
     def analyze(self):
         count_line = 1
-        count_word = 1
         error = False
-        line = self.content.split()
-        # print(repr(line))
-        # line = self.content.splitlines()
-        # print(repr(line))
-        for words in line:
-            for letter in words:
-                try:
-                    self.buffer += letter                       # Make a buffer
-                    symbol = self.symbols[letter]               # Verify the symbols
-                    self.state = self.table[self.state][symbol] # Verify the states
-                    token = self.states[self.state][:]
-                except:
-                    if(token[:7] == "Lexical"):
-                        print(token +str(self.buffer))
-                        error = True
-            print("buffer: "+self.buffer)
-            if not(error):
-                token.append(self.buffer)
-                #token = token + str(self.buffer)
-                self.tokens.append(token)
-                self.buffer = ""
-                self.state = 0
-
+        source = self.content.splitlines()
+        for line in source:
+            line = line.split()
+            for word in line:
+                for letter in word:
+                    token = self.get_token(letter)
+                if not(error):
+                    self.make_tokens_list(token)
+            count_line += 1
         print("tokens: "+str(self.tokens))
         self.f.close()
+
+    # --------------------Get the token-----------------------------------------
+    def get_token(self,letter):
+        self.buffer += letter # Make a buffer
+        try:
+            symbol = self.symbols[letter] # Verify the symbols
+            try:
+                self.state = self.table[self.state][symbol] # Verify the states
+                token = self.states[self.state][:] # Verify token
+                print("buffer: "+self.buffer)
+                # print("state: "+str(self.state))
+            except:
+                print("\n"+self.errors[self.state]+self.buffer+" in line "+str(count_line)+"\n")
+                error = True
+                return None
+        except:
+            print("\n"+letter+" is a invalid symbol in line "+str(count_line)+"\n")
+            error = True
+            return None
+        return token
+
+    #------------------Make the list of tokens----------------------------------
+    def make_tokens_list(self,token):
+        token.append(self.buffer)
+        self.tokens.append(token)
+        self.buffer = ""
+        self.state = 0
 
     # ---------------------Return the next token of the list--------------------
     def next_token(self):

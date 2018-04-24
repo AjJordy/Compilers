@@ -4,5 +4,6 @@ testando especiais
     teste tab;
 
 = <> + /
+242.234e
 testando underline_teste
 fim de   arquivo

@@ -8,6 +8,8 @@ class Lexical(object):
         self.state = 0
         self.tokens = list()
         self.error = False
+        self.count_line = 1
+        self.count_column = 1
 
         # Table of symbols capable to read
         self.symbols = {
@@ -146,17 +148,21 @@ class Lexical(object):
     # --------------------Analyze the sorce file--------------------------------
     def analyze(self):
         count_line = 1
-        error = False
+        count_colum= 1
+        self.error = False
         source = self.content.splitlines()
         for line in source:
             line = line.split()
             for word in line:
                 for letter in word:
                     token = self.get_token(letter)
-                if not(error):
+                if not(self.error):
                     self.make_tokens_list(token)
-            count_line += 1
-        print("tokens: "+str(self.tokens))
+                self.count_column += 1
+            self.count_line += 1
+        if not(self.error): print("tokens: "+str(self.tokens))
+        else: print("\n"+self.errors[self.state]+self.buffer+
+            " in line "+str(self.count_line)+" in column "+str(self.count_column)+"\n")
         self.f.close()
 
     # --------------------Get the token-----------------------------------------
@@ -166,18 +172,17 @@ class Lexical(object):
             symbol = self.symbols[letter] # Verify the symbols
             try:
                 self.state = self.table[self.state][symbol] # Verify the states
-                token = self.states[self.state][:] # Verify token
-                print("buffer: "+self.buffer)
-                # print("state: "+str(self.state))
+                token = self.states[self.state][:]          # Verify token
+                return token
             except:
-                print("\n"+self.errors[self.state]+self.buffer+" in line "+str(count_line)+"\n")
-                error = True
+                self.error = True
                 return None
         except:
-            print("\n"+letter+" is a invalid symbol in line "+str(count_line)+"\n")
-            error = True
+            print("\n"+letter+" is a invalid symbol in line "+
+                str(self.count_line)+" in column "+str(self.count_column)+"\n")
+            self.error = True
             return None
-        return token
+
 
     #------------------Make the list of tokens----------------------------------
     def make_tokens_list(self,token):
@@ -188,6 +193,7 @@ class Lexical(object):
 
     # ---------------------Return the next token of the list--------------------
     def next_token(self):
-        if(self.error == False):        # Verify if there is an error
+        if not(self.error):        # Verify if there is an error
             return self.tokens.pop(0)   # Remove and return the first element
-        else: return "error"
+        else:
+            return None

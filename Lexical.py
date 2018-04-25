@@ -10,6 +10,8 @@ class Lexical(object):
         self.error = False
         self.count_line = 1
         self.count_column = 1
+        self.flag_comment = False
+        self.flag_literal = False
 
         # Table of symbols capable to read
         self.symbols = {
@@ -62,10 +64,8 @@ class Lexical(object):
             2:"Lexical error, invalid format in float number, put some numbers after dot at ",
             3:"Lexical error, invalid format in exponential number, put some number after \"e\" or \"E\", at ",
             4:"Lexical error, invalid format in exponential number, put some number after \"+\" or \"-\", at ",
-            7:"Lexical error, you need to close \" at ",
             8:"Lexical error, you need to close \" at ",
-            11:"Lexical error, you need to close } at ",
-            12:"Lexical error, you need to close } at "
+            13:"Lexical error, you need to close } at "
             #14:"Lexical error",
         }
 
@@ -79,11 +79,11 @@ class Lexical(object):
             4: {'D':5},
             5: {'D':5}, # final
             6: {'D':6, 'E':3, 'e':3}, # final
-            7:{'\"':9},
-            8:{'\"':9},
+            #7:{'\"':9},
+            #8:{'\"':9},
             10:{'L':10, 'D':10, 'e':10,'E':10 , '_':10}, # final
-            11:{'}':13},
-            12:{'}':13},
+            #11:{'}':13},
+            #12:{'}':13},
             15: {'-':21, '=':17, '>':16}, # final
             19:{'=':20} # final
         }
@@ -96,11 +96,11 @@ class Lexical(object):
 
 
     def treat_file(self):
-        self.content = self.content.replace("\""," \" ")
+        #self.content = self.content.replace("\""," \" ")
         self.content = self.content.replace(";"," ; ")
         self.content = self.content.replace("="," = ")
         self.content = self.content.replace("<"," < ")
-        self.content = self.content.replace(">"," > ")        
+        self.content = self.content.replace(">"," > ")
         self.content = self.content.replace("="," = ")
         self.content = self.content.replace("<  >"," <> ")
         self.content = self.content.replace("{"," { ")
@@ -116,7 +116,7 @@ class Lexical(object):
         self.content = self.content.replace("e - ","e-")
         self.content = self.content.replace("E - ","E-")
         self.content = self.content.replace("<  -"," <- ")
-        print(self.content)
+        #print(self.content)
 
 
     # --------------------Analyze the sorce file--------------------------------
@@ -129,7 +129,7 @@ class Lexical(object):
             line = line.split()
             for word in line:
                 for letter in word:
-                    self.get_state(letter)
+                    self.treat(letter)
                 if not(self.error):
                     token = self.states[self.state][:] # Verify token
                     if not(token[0] == "erro"): self.make_tokens_list(token)
@@ -144,6 +144,35 @@ class Lexical(object):
         if not(self.error): print("tokens: "+str(self.tokens))
         self.f.close()
 
+    #-------------------Deal with the letter------------------------------------
+    def treat(self, letter):
+        if(letter == '\"'): self.flag_literal = True
+        elif(letter == '{'): self.flag_comment = True
+        else:
+            if(self.flag_comment):
+                print("entrou comentario")
+                self.get_comment(letter)
+            elif(self.flag_literal):
+                print("entrou literal")
+                self.get_literal(letter)
+            else:
+                self.get_state(letter)
+
+    #---------------------Get the literals--------------------------------------
+    def get_literal(self,letter):
+        self.buffer += letter
+        if(letter == '\"'):
+            self.state = 9
+            self.flag_literal = False
+        else: self.state = 8
+
+    #-------------------Get the comments----------------------------------------
+    def get_comment(self,letter):
+        self.buffer += letter
+        if(letter == '}'):
+            self.state = 13
+            self.flag_comment = False
+        else: self.state = 12
 
     # --------------------Get the state of ending of token----------------------
     def get_state(self,letter):
@@ -160,6 +189,7 @@ class Lexical(object):
                 str(self.count_line)+" in column "+str(self.count_column)+"\n")
             self.error = True
             return None
+
     #---------------- Print erro's message--------------------------------------
     def print_error(self):
         print(self.state)

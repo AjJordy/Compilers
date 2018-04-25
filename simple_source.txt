@@ -1,41 +1,9 @@
 primeira linha
 segunda + linha>
-testando especiais+
+testando "literal"
     teste tab;
 
 = <> + /
 234.234e+34
 testando underline_teste
 fim de   arquivo
-
-
-inicio
-  varinicio
-    A literal;
-    B inteiro;
-    D inteiro;
-    C real;
-  varfim;
-  escreva ;
-  leia B;
-  escreva;
-  leia A;
-  se(B>2)
-  entao
-    se(B<=4)
-    entao
-      escreva ;
-    fimse
-  fimse
-  B<-B+1;
-  B<-B+2;
-  B<-B+3;
-  D<-B;
-  C<-5.0;
-  escreva ;
-  escreva D;
-  escreva ;
-  escreva C;
-  escreva ;
-  escreva A;
-fim

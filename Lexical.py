@@ -129,9 +129,11 @@ class Lexical(object):
             line = line.split()
             for word in line:
                 for letter in word:
-                    self.treat(letter)
+                    self.treat(letter) # Get the state of a token
                 if not(self.error):
+                    print(self.state)
                     token = self.states[self.state][:] # Verify token
+                    # Make list of tokens if there isnt erros
                     if not(token[0] == "erro"): self.make_tokens_list(token)
                     else:
                         self.print_error()
@@ -168,7 +170,6 @@ class Lexical(object):
 
     #-------------------Get the comments----------------------------------------
     def get_comment(self,letter):
-        self.buffer += letter
         if(letter == '}'):
             self.state = 13
             self.flag_comment = False
@@ -186,13 +187,13 @@ class Lexical(object):
                 return None
         except:
             print("\n"+letter+" is a invalid symbol in line "+
-                str(self.count_line)+" in column "+str(self.count_column)+"\n")
+                 str(self.count_line)+" in column "+str(self.count_column)+"\n")
             self.error = True
             return None
 
     #---------------- Print erro's message--------------------------------------
     def print_error(self):
-        print(self.state)
+        print("Error: "+str(self.state))
         print("\n"+self.errors[self.state]+self.buffer+
             " in line "+str(self.count_line)+
             " in column "+str(self.count_column)+"\n")
@@ -204,9 +205,8 @@ class Lexical(object):
         self.buffer = ""
         self.state = 0
 
-
     # ---------------------Return the next token of the list--------------------
     def next_token(self):
-        if not(self.error):        # Verify if there is an error
+        if not(self.error):             # Verify if there is an error
             return self.tokens.pop(0)   # Remove and return the first element
         else: return None

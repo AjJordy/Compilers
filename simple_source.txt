@@ -1,6 +1,6 @@
 primeira linha
 segunda + linha>
-testando "literal"
+testando {literal}
     teste tab;
 
 = <> + /

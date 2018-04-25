@@ -96,15 +96,27 @@ class Lexical(object):
 
 
     def treat_file(self):
-        # self.content = self.content.replace("\""," \" ")
+        self.content = self.content.replace("\""," \" ")
         self.content = self.content.replace(";"," ; ")
-        self.content = self.content.replace("<-"," <- ")
         self.content = self.content.replace("="," = ")
-        self.content = self.content.replace("<>"," <> ")
+        self.content = self.content.replace("<"," < ")
+        self.content = self.content.replace(">"," > ")        
+        self.content = self.content.replace("="," = ")
+        self.content = self.content.replace("<  >"," <> ")
         self.content = self.content.replace("{"," { ")
         self.content = self.content.replace("}"," } ")
         self.content = self.content.replace("("," ( ")
         self.content = self.content.replace(")"," ) ")
+        self.content = self.content.replace("/"," / ")
+        self.content = self.content.replace("*"," * ")
+        self.content = self.content.replace("+"," + ")
+        self.content = self.content.replace("e + ","e+")
+        self.content = self.content.replace("E + ","E+")
+        self.content = self.content.replace("-"," - ")
+        self.content = self.content.replace("e - ","e-")
+        self.content = self.content.replace("E - ","E-")
+        self.content = self.content.replace("<  -"," <- ")
+        print(self.content)
 
 
     # --------------------Analyze the sorce file--------------------------------
@@ -148,8 +160,9 @@ class Lexical(object):
                 str(self.count_line)+" in column "+str(self.count_column)+"\n")
             self.error = True
             return None
-
+    #---------------- Print erro's message--------------------------------------
     def print_error(self):
+        print(self.state)
         print("\n"+self.errors[self.state]+self.buffer+
             " in line "+str(self.count_line)+
             " in column "+str(self.count_column)+"\n")

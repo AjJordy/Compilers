@@ -9,11 +9,20 @@ class Lexical(object):
         self.count_line = 0
         self.count_column = 0
 
-
         self.symbols_table = {
             'inicio':['inicio','','inicio'],
-            'varinicio':['varinicio','','varinicio']
-            # TODO resto
+            'varinicio':['varinicio','','varinicio'],
+            'varfim':['varfim','','varfim'],
+            'escreva':['escreva','','escreva'],
+            'leia':['leia','','leia'],
+            'se':['se','','se'],
+            'entao':['entao','','entao'],
+            'senao':['senao','','senao'],
+            'fimse':['fimse','','fimse'],
+            'fim':['fim','','fim'],
+            'Inteiro':['Inteiro','','Inteiro'],
+            'literal':['literal','','literal'],
+            'real':['real','','real']
         }
 
         # Table of symbols capable to read
@@ -30,7 +39,7 @@ class Lexical(object):
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
             '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=','>':'>','<':'<','*':'*',
-            '/':'/',';':';','(':'(',')':')', 'whitespace':'whitespace'
+            '/':'/',';':';','(':'(',')':')',':':':', 'whitespace':'whitespace'
         }
         # Table of outputs\
         self.states = {
@@ -65,18 +74,19 @@ class Lexical(object):
         # Table of errors
         self.errors = {
             0:"Lexical error, invalid symbol to start, at ",
-            2:"Lexical error, invalid format in float number, put some numbers after dot at ",
-            3:"Lexical error, invalid format in exponential number, put some number after \"e\" or \"E\", at ",
-            4:"Lexical error, invalid format in exponential number, put some number after \"+\" or \"-\", at ",
+            2:"Lexical error, invalid format in real number, put some numbers after dot at ",
+            3:"Lexical error, invalid format in real number, put some number after \"e\" or \"E\", at ",
+            4:"Lexical error, invalid format in real number, put some number after \"+\" or \"-\", at ",
+            7:"Lexical error, you need to close \" at ",
             8:"Lexical error, you need to close \" at ",
-            13:"Lexical error, you need to close } at "
-            #14:"Lexical error",
+            11:"Lexical error, you need to close } at ",
+            12:"Lexical error, you need to close } at "
         }
 
         # Table of transitions
         self.table = {
             0:{'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
-        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,'\\n':0,' ':0,
+        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,
                 'EOF':26,'whitespace':0},
             1:{'D':1,'E':3,'e':3,'.':2}, # final
             2:{'D':6},
@@ -84,18 +94,19 @@ class Lexical(object):
             4:{'D':5},
             5:{'D':5}, # final
             6:{'D':6,'E':3,'e':3}, # final
-            7:{'\"':9,'D':8, 'L':8,'e':8,'E':8, '>':8, '<':8, '=':8,
-        	 	';':8, '(':8, ')':8, '+':8, '-':8, '*':8, '/':8,'\\n':8,'whitespace':8},
-            8:{'\"':9,'D':8, 'L':8,'e':8,'E':8, '>':8, '<':8, '=':8,
-        	 	';':8, '(':8, ')':8, '+':8, '-':8, '*':8, '/':8,'\\n':8,'whitespace':8},
+            7:{'\"':9,'D':8, 'L':8,'e':8,'E':8, '>':8, '<':8, '=':8,':':8,
+        	 	';':8, '(':8, ')':8, '+':8, '-':8, '*':8, '/':8,'whitespace':8},
+            8:{'\"':9,'D':8, 'L':8,'e':8,'E':8, '>':8, '<':8, '=':8,':':8,
+        	 	';':8, '(':8, ')':8, '+':8, '-':8, '*':8, '/':8,'whitespace':8},
             10:{'L':10, 'D':10, 'e':10,'E':10 , '_':10}, # final
             11:{'}':13,'D':12, '\"':12, 'L':12,'e':12,'E':12, '{':12, '>':12, '<':12, '=':12,
-        	 	';':12, '(':12, ')':12, '+':12, '-':12, '*':12, '/':12,'\\n':12,'whitespace':12},
+                ':':12,';':12, '(':12, ')':12, '+':12, '-':12, '*':12, '/':12,'whitespace':12},
             12:{'}':13,'D':12, '\"':12, 'L':12,'e':12,'E':12, '{':12, '>':12, '<':12, '=':12,
-        	 	';':12, '(':12, ')':12, '+':12, '-':12, '*':12, '/':12,'\\n':12,'whitespace':12},
+                ':':12,';':12, '(':12, ')':12, '+':12, '-':12, '*':12, '/':12,'whitespace':12},
             14:{'D':1, 'E':3, 'e':3, '.':2},
             15:{'-':21, '=':17, '>':16}, # final
             19:{'=':20}, # final
+            # 26: "EOF"
 
 
         }
@@ -104,7 +115,7 @@ class Lexical(object):
     # ------------------------Get the source file-------------------------------
     def get_file(self,path):
         self.f = open(path, 'r')
-
+        #print(repr(self.f.read()))
 
     #-------------------------Return the next token-----------------------------
     def next_token(self):
@@ -112,18 +123,26 @@ class Lexical(object):
         self.buffer = ""
         while(True):
             self.position = self.f.tell()
-            self.content = self.f.read(1)
+            self.content = self.f.read(1) # read one letter
             self.count_column += 1
 
-            if(self.content in [' ','\t','\n']):
+            if(self.content in [' ','\t','\n','\\']):
                 symbol = "whitespace"
-            elif(self.content): symbol = self.symbols[self.content]
-            else: symbol = "EOF"
+            elif(self.content):
+                try:
+                    symbol = self.symbols[self.content]
+                except:
+                    symbol = '$'
+            else:
+                symbol = "EOF"
 
             try:
                 self.state = self.table[self.state][symbol]
-                if not(symbol == "whitespace" and self.state): self.buffer += self.content
-                if(self.content in ['\n']):
+                if (self.state in [7,8,11,12]):
+                    self.buffer += self.content
+                elif not(symbol == "whitespace"):
+                    self.buffer += self.content
+                if(self.content in ['\n'] and not self.state in [7,8,11,12]):
                     self.count_line += 1
                     self.count_column = 1
             except:
@@ -143,7 +162,6 @@ class Lexical(object):
                         else:
                             self.symbols_table[self.buffer] = token
                 return token
-
 
 
     #---------------- Print erro's message--------------------------------------

@@ -3,7 +3,7 @@ from new import Lexical
 
 def main():
     lx = Lexical()
-    lx.get_file('simple_source.txt')
+    lx.get_file('source.txt')    
     while(True):
         temp = lx.next_token()
         print(temp)

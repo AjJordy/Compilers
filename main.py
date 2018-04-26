@@ -1,4 +1,4 @@
-from Lexical import Lexical
+from new import Lexical
 
 def main():
     lx = Lexical()

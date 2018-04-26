@@ -5,9 +5,9 @@ class Lexical(object):
         self.buffer = ""
         self.state = 0
         self.tokens = list()
-        self.error = False
-        self.count_line = 1
-        self.count_column = 1
+        #self.error = False
+        self.count_line = 0
+        self.count_column = 0
 
 
         # Table of symbols capable to read
@@ -68,22 +68,24 @@ class Lexical(object):
 
         # Table of transitions
         self.table = {
-            0: {'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
-        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22},
-            1: {'D':1, 'E':3, 'e':3, '.':2}, # final
-            2: {'D':6},
-            3: {'+':4, '-':4, 'D':5 },
-            4: {'D':5},
-            5: {'D':5}, # final
-            6: {'D':6, 'E':3, 'e':3}, # final
-            #7:{'\"':9},
-            #8:{'\"':9},
-            10:{'L':10, 'D':10, 'e':10,'E':10 , '_':10, ' ':0,'\\':0}, # final
-            #11:{'}':13},
-            #12:{'}':13},
-            15: {'-':21, '=':17, '>':16}, # final
+            0:{'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
+        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,'\\n':0,' ':0},
+            1:{'D':1,'E':3,'e':3,'.':2}, # final
+            2:{'D':6},
+            3:{'+':4, '-':4, 'D':5 },
+            4:{'D':5},
+            5:{'D':5}, # final
+            6:{'D':6,'E':3,'e':3}, # final
+            7:{'\"':9},
+            8:{'\"':9},
+            10:{'L':10, 'D':10, 'e':10,'E':10 , '_':10}, # final
+            11:{'}':13},
+            12:{'}':13},
+            # 13:{'D':13, '\"':13 'L':13,'e':13,'E':13, '{':13, '>':13, '<':15, '=':13,
+        	# 	';':13, '(':13, ')':13, '+':13, '-':13, '*':13, '/':13,'\\n':13,' ':13},
+            14:{'D':1, 'E':3, 'e':3, '.':2},
+            15:{'-':21, '=':17, '>':16}, # final
             19:{'=':20}, # final
-            26:{'n':0}# quebra de linha
 
         }
 
@@ -97,21 +99,32 @@ class Lexical(object):
         self.state = 0
         for i in range(len(self.content)):
             #print(repr(self.content[i]))
-            self.buffer += self.content[i]
-            symbol = self.symbols[self.content[i]]
-            self.state = self.table[self.state][symbol]
-            token = self.states[self.state][:]
             print(self.buffer)
-            self.make_tokens_list(token)
-            if(self.state == 0): self.buffer = ""
+            symbol = self.symbols[self.content[i]]
+            try:
+                self.state = self.table[self.state][symbol]
+                self.buffer += self.content[i]
+            except:
+                if(self.states[self.state][0] == "erro"):
+                    self.print_error()
+                    return None
+                else: # if state is final
+                    token = self.states[self.state][:]
+                    print(self.buffer)
+                    self.make_tokens_list(token)
+                    print("tokens: "+str(self.tokens))
+                    self.state = 0
+                    self.buffer = ""
             print(self.state)
+            self.count_column += 1
+        #print("tokens: "+str(self.tokens))
 
     #---------------- Print erro's message--------------------------------------
     def print_error(self):
-        print("Error: "+str(self.state))
+        #print("Error: "+str(self.state))
         print("\n"+self.errors[self.state]+self.buffer+
-            " in line "+str(self.count_line)+
-            " in column "+str(self.count_column)+"\n")
+            " in column "+str(self.count_column)+"\n\n")
+            #+" in line "+str(self.count_line)+
 
     #------------------Make the list of tokens----------------------------------
     def make_tokens_list(self,token):

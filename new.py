@@ -5,10 +5,16 @@ class Lexical(object):
         self.buffer = ""
         self.state = 0
         self.tokens = list()
-        #self.error = False
+        self.position = 0
         self.count_line = 0
         self.count_column = 0
 
+
+        self.symbols_table = {
+            'inicio':['inicio','','inicio'],
+            'varinicio':['varinicio','','varinicio']
+            # TODO resto
+        }
 
         # Table of symbols capable to read
         self.symbols = {
@@ -24,7 +30,7 @@ class Lexical(object):
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
             '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=','>':'>','<':'<','*':'*',
-            '/':'/',';':';','(':'(',')':')',' ':' ','\\n':'\\n'
+            '/':'/',';':';','(':'(',')':')', 'whitespace':'whitespace'
         }
         # Table of outputs\
         self.states = {
@@ -32,8 +38,8 @@ class Lexical(object):
             2: ["erro"],
             3: ["erro"],
             4: ["erro"],
-            5: ['Num','exponential'], # final
-            6: ['Num','float'],       # final
+            5: ['Num','real'], # final
+            6: ['Num','real'],       # final
             7: ["erro"],
             8: ["erro"],
             9: ['Literal',''],        # final
@@ -52,7 +58,8 @@ class Lexical(object):
             22:['OPM',''], # final
             23:['AB_P',''],# final
             24:['FC_P',''],# final
-            25:['PT_V',''] # final
+            25:['PT_V',''], # final
+            26:['EOF','']
         }
 
         # Table of errors
@@ -69,7 +76,8 @@ class Lexical(object):
         # Table of transitions
         self.table = {
             0:{'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
-        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,'\\n':0,' ':0},
+        		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,'\\n':0,' ':0,
+                'EOF':26,'whitespace':0},
             1:{'D':1,'E':3,'e':3,'.':2}, # final
             2:{'D':6},
             3:{'+':4, '-':4, 'D':5 },
@@ -79,13 +87,16 @@ class Lexical(object):
             7:{'\"':9},
             8:{'\"':9},
             10:{'L':10, 'D':10, 'e':10,'E':10 , '_':10}, # final
-            11:{'}':13},
-            12:{'}':13},
+            11:{'D':12, '\"':12, 'L':12,'e':12,'E':12, '{':12, '>':13, '<':12, '=':13,
+        	 	';':13, '(':13, ')':13, '+':13, '-':13, '*':13, '/':13,'\\n':13,' ':13},
+            12:{'D':13, '\"':13, 'L':13,'e':13,'E':13, '{':13, '>':13, '<':15, '=':13,
+        	 	';':13, '(':13, ')':13, '+':13, '-':13, '*':13, '/':13,'\\n':13,' ':13},
             # 13:{'D':13, '\"':13 'L':13,'e':13,'E':13, '{':13, '>':13, '<':15, '=':13,
         	# 	';':13, '(':13, ')':13, '+':13, '-':13, '*':13, '/':13,'\\n':13,' ':13},
             14:{'D':1, 'E':3, 'e':3, '.':2},
             15:{'-':21, '=':17, '>':16}, # final
             19:{'=':20}, # final
+
 
         }
 
@@ -93,46 +104,49 @@ class Lexical(object):
     # ------------------------Get the source file-------------------------------
     def get_file(self,path):
         self.f = open(path, 'r')
-        self.content = self.f.read()
 
-    def analyze(self):
+
+    def next_token(self):
         self.state = 0
-        for i in range(len(self.content)):
-            #print(repr(self.content[i]))
-            print(self.buffer)
-            symbol = self.symbols[self.content[i]]
+        self.buffer = ""
+        while(True):
+            self.position = self.f.tell()
+            self.content = self.f.read(1)
+            self.count_column += 1
+
+            if(self.content in [' ','\t','\n']):
+                symbol = "whitespace"
+            elif(self.content): symbol = self.symbols[self.content]
+            else: symbol = "EOF"
+
             try:
                 self.state = self.table[self.state][symbol]
-                self.buffer += self.content[i]
+                if not(symbol == "whitespace"): self.buffer += self.content
+                if(self.content in ['\n']):
+                    self.count_line += 1
+                    self.count_column = 1
             except:
-                if(self.states[self.state][0] == "erro"):
+                token = self.states[self.state][:]
+                self.f.seek(self.position)
+                self.count_column -= 1
+                if(token[0] == "erro"):
                     self.print_error()
-                    return None
+                    token.append(self.errors[self.state])
+                    token.append(self.count_line)
+                    token.append(self.count_column)
                 else: # if state is final
-                    token = self.states[self.state][:]
-                    print(self.buffer)
-                    self.make_tokens_list(token)
-                    print("tokens: "+str(self.tokens))
-                    self.state = 0
-                    self.buffer = ""
-            print(self.state)
-            self.count_column += 1
-        #print("tokens: "+str(self.tokens))
+                    token.append(self.buffer)
+                    if(token[0] == 'id'):
+                        if(self.buffer in self.symbols_table):
+                            return self.symbols_table[self.buffer]
+                        else:
+                            self.symbols_table[self.buffer] = token
+                return token
+
+
 
     #---------------- Print erro's message--------------------------------------
     def print_error(self):
-        #print("Error: "+str(self.state))
         print("\n"+self.errors[self.state]+self.buffer+
+            " in line "+str(self.count_line)+
             " in column "+str(self.count_column)+"\n\n")
-            #+" in line "+str(self.count_line)+
-
-    #------------------Make the list of tokens----------------------------------
-    def make_tokens_list(self,token):
-        token.append(self.buffer)
-        self.tokens.append(token)
-        self.buffer = ""
-        self.state = 0
-
-    # ---------------------Return the next token of the list--------------------
-    def next_token(self):
-    	return self.tokens.pop(0)   # Remove and return the first element

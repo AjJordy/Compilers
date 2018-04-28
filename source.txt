@@ -19,7 +19,7 @@ inicio
   B<-B+1;
   B<-B+2;
   B<-B+3;
-  D<-B;
+  D<-34.5345;
   C<-5.0;
   escreva "\nB=\n";
   escreva D;

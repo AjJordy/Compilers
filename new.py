@@ -1,7 +1,8 @@
 class Lexical(object):
 
     def __init__(self):
-        # Initialize variables
+
+        #------------------------ Initialize variables--------------------------
         self.buffer = ""
         self.state = 0
         self.tokens = list()
@@ -9,6 +10,7 @@ class Lexical(object):
         self.count_line = 0
         self.count_column = 0
 
+        #-----------------------Table of identifiers----------------------------
         self.symbols_table = {
             'inicio':['inicio','','inicio'],
             'varinicio':['varinicio','','varinicio'],
@@ -25,37 +27,39 @@ class Lexical(object):
             'real':['real','','real']
         }
 
-        # Table of symbols capable to read
+        # ----------------------Table of symbols capable to read----------------
         self.symbols = {
             # Alphabet lower case
-            'a':'L','b':'L','c':'L','d':'L','e':'e','f':'L','g':'L','h':'L','i':'L','j':'L','k':'L','l':'L',
-            'm':'L','n':'L','o':'L','p':'L','q':'L','r':'L','s':'L','t':'L','u':'L','v':'L','x':'L','w':'L',
-            'y':'L','z':'L',
+            'a':'L','b':'L','c':'L','d':'L','e':'e','f':'L','g':'L','h':'L','i':'L',
+            'j':'L','k':'L','l':'L','m':'L','n':'L','o':'L','p':'L','q':'L','r':'L',
+            's':'L','t':'L','u':'L','v':'L','x':'L','w':'L','y':'L','z':'L',
             # Alphabet upper case
-            'A':'L','B':'L','C':'L','D':'L','E':'E','F':'L','G':'L','H':'L','I':'L','J':'L','K':'L','L':'L',
-            'M':'L','N':'L','O':'L','P':'L','Q':'L','R':'L','S':'L','T':'L','U':'L','V':'L','X':'L','W':'L',
-            'Y':'L','Z':'L',
-            # Dumbers
+            'A':'L','B':'L','C':'L','D':'L','E':'E','F':'L','G':'L','H':'L','I':'L',
+            'J':'L','K':'L','L':'L','M':'L','N':'L','O':'L','P':'L','Q':'L','R':'L',
+            'S':'L','T':'L','U':'L','V':'L','X':'L','W':'L','Y':'L','Z':'L',
+            # Numbers
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
-            '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=','>':'>','<':'<','*':'*',
-            '/':'/',';':';','(':'(',')':')',':':':', 'whitespace':'whitespace'
+            '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=',
+            '>':'>','<':'<','*':'*','/':'/',';':';','(':'(',')':')',':':':',
+            'whitespace':'whitespace'
         }
-        # Table of outputs\
+
+        # -----------------------Table of outputs-------------------------------
         self.states = {
-            1: ['Num','int'],         # final
+            1: ['Num','int'],# final
             2: ["erro"],
             3: ["erro"],
             4: ["erro"],
-            5: ['Num','real'], # final
-            6: ['Num','real'],       # final
+            5: ['Num','real'],# final
+            6: ['Num','real'],# final
             7: ["erro"],
             8: ["erro"],
-            9: ['Literal',''],        # final
-            10:['id',''],             # final
+            9: ['Literal',''],# final
+            10:['id',''],# final
             11:["erro"],
             12:["erro"],
-            13:['Comentario',''],     # final
+            13:['Comentario',''],# final
             14:["erro"],
             15:['OPR',''], # final
             16:['OPR',''], # final
@@ -68,10 +72,11 @@ class Lexical(object):
             23:['AB_P',''],# final
             24:['FC_P',''],# final
             25:['PT_V',''], # final
-            26:['EOF','']
+            26:['EOF',''],
+            30:'erro'
         }
 
-        # Table of errors
+        # ---------------------------Table of errors----------------------------
         self.errors = {
             0:"Lexical error, invalid symbol to start, at ",
             2:"Lexical error, invalid format in real number, put some numbers after dot at ",
@@ -80,10 +85,11 @@ class Lexical(object):
             7:"Lexical error, you need to close \" at ",
             8:"Lexical error, you need to close \" at ",
             11:"Lexical error, you need to close } at ",
-            12:"Lexical error, you need to close } at "
+            12:"Lexical error, you need to close } at ",
+            30:"Lexical error, symbol doesn't allow "
         }
 
-        # Table of transitions
+        # ------------------------Table of transitions--------------------------
         self.table = {
             0:{'D':1, '\"':7, 'L':10,'e':10,'E':10, '{':11, '>':19, '<':15, '=':18,
         		';':25, '(':23, ')':24, '+':22, '-':22, '*':22, '/':22,
@@ -107,35 +113,38 @@ class Lexical(object):
             15:{'-':21, '=':17, '>':16}, # final
             19:{'=':20}, # final
             # 26: "EOF"
-
-
         }
 
 
     # ------------------------Get the source file-------------------------------
     def get_file(self,path):
         self.f = open(path, 'r')
-        #print(repr(self.f.read()))
 
     #-------------------------Return the next token-----------------------------
     def next_token(self):
         self.state = 0
         self.buffer = ""
+        token = []
         while(True):
             self.position = self.f.tell()
             self.content = self.f.read(1) # read one letter
             self.count_column += 1
 
+            # -------------------- Verify the symbol---------------------------
             if(self.content in [' ','\t','\n','\\']):
                 symbol = "whitespace"
             elif(self.content):
                 try:
                     symbol = self.symbols[self.content]
                 except:
-                    symbol = '$'
+                    token.append(self.content)
+                    token.append(self.states[30])
+                    token.append(self.errors[30])
+                    return token
             else:
                 symbol = "EOF"
 
+            #----------------------- Make token --------------------------------
             try:
                 self.state = self.table[self.state][symbol]
                 if (self.state in [7,8,11,12]):
@@ -149,12 +158,14 @@ class Lexical(object):
                 token = self.states[self.state][:]
                 self.f.seek(self.position)
                 self.count_column -= 1
+                #----------------- if state isn't final-------------------------
                 if(token[0] == "erro"):
                     self.print_error()
                     token.append(self.errors[self.state])
                     token.append(self.count_line)
                     token.append(self.count_column)
-                else: # if state is final
+                #----------------- if state is final----------------------------
+                else:
                     token.append(self.buffer)
                     if(token[0] == 'id'):
                         if(self.buffer in self.symbols_table):

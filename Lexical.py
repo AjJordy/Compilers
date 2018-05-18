@@ -18,7 +18,7 @@ class Lexical(object):
             'escreva':['escreva','','escreva'],
             'leia':['leia','','leia'],
             'se':['se','','se'],
-            'entao':['entao','','entao'],
+            'então':['entao','','entao'],
             'senao':['senao','','senao'],
             'fimse':['fimse','','fimse'],
             'fim':['fim','','fim'],
@@ -30,7 +30,7 @@ class Lexical(object):
         # ----------------------Table of symbols capable to read----------------
         self.symbols = {
             # Alphabet lower case
-            'a':'L','b':'L','c':'L','d':'L','e':'e','f':'L','g':'L','h':'L','i':'L',
+            'a':'L','ã':'L','b':'L','c':'L','d':'L','e':'e','f':'L','g':'L','h':'L','i':'L',
             'j':'L','k':'L','l':'L','m':'L','n':'L','o':'L','p':'L','q':'L','r':'L',
             's':'L','t':'L','u':'L','v':'L','x':'L','w':'L','y':'L','z':'L',
             # Alphabet upper case

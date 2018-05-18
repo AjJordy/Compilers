@@ -1,29 +1,41 @@
 from Lexical import Lexical
+import pandas as pd
 
 if __name__ == "__main__":
     main()
 
 def main():
+
+    # Lexical
     lx = Lexical()
     lx.get_file('source.txt')
 
-    stack = []
+    # Import csv
+    GOTO = pd.read_csv('non_terminals.csv')
+    ACTION = pd.read_csv('terminals.csv')
 
+    # Variables
+    stack = []
+    state = 0
+
+    #-----------------------Sintatic algorithm----------------------------------
     a = lx.next_token()
     while(True):
-        s = stack.top()                   # Seja s o estado no topo da pilha
-        if (ACTION[s,a] = shift t):
+        state = stack.top()               # Seja s o estado no topo da pilha
+        if (ACTION.loc[state,a[0]] = shift t):
             stack.push(t)                 # Empilha t na pilha
             a = lx.next_token()           # Seja a o proximo simbulo da entrada
-        elif(ACTION[s,a] = reduce A -> B):
+        elif(ACTION.loc[state,a[0]] = reduce A -> B):
             stack.pop()                   # Desempilhe o simbulo B da pilha
             stack.push(t);                # Faça o estado t ser o topo da pilha
-            stack.push(GOTO[t,A])        # Empilhe GOTO[t,A] na pilha
+            stack.push(GOTO.loc[t,a[0]])  # Empilhe GOTO[t,A] na pilha
             print(produtions[production]) # Imprima a producao
-        elif(ACTION[s,a] = 'accept'): break
+        elif(ACTION.loc[state,a] = 'accept'): break
         else recovery()
 
 def recovery():
+    # TODO recovery
+    print("Error")
 
 produtions = {
     1:'P\'-> P',
@@ -56,25 +68,4 @@ produtions = {
     28:'CORPO -> COND CORPO',
     29:'CORPO -> fimse',
     30:'A -> fim'
-}
-
-GOTO = {
-    0:{'P':1},
-    2:{'V':3},
-    3:{'A':9,'ES':10,'CMD':15,'COND':14,'CABEÇALHO':13},
-    4:{'LV':5,'D':6},
-    6:{'LV':24,'D':6},
-    7:{'TIPO':20},
-    10:{'A':25,'ES':10,'CMD':15,'COND':14,'CABEÇALHO':13},
-    12:{'ARG':29},
-    13:{'ES':41,'CMD':44,'COND':43,'CABEÇALHO':13,'CORPO':40},
-    14:{'A':27,'ES':10,'CMD':15,'COND':14,'CABEÇALHO':13},
-    15:{'A':26,'ES':10,'CMD':15,'COND':14,'CABEÇALHO':13},
-    28:{'OPRD':48,'EXP_R':34},
-    37:{'LD':51,'OPRD':54},
-    41:{'ES':41,'CMD':44,'COND':43,'CABEÇALHO':13},
-    43:{'ES':41,'CMD':44,'COND':43,'CABEÇALHO':13,'CORPO':45},
-    44:{'ES':41,'CMD':44,'COND':43,'CABEÇALHO':13,'CORPO':58},
-    49:{'OPRD':57},
-    55:{'OPRD':56}
 }

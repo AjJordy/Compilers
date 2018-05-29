@@ -18,12 +18,12 @@ class Lexical(object):
             'escreva':['escreva','','escreva'],
             'leia':['leia','','leia'],
             'se':['se','','se'],
-            'então':['entao','','entao'],
+            'entao':['entao','','entao'],
             'senao':['senao','','senao'],
             'fimse':['fimse','','fimse'],
             'fim':['fim','','fim'],
-            'Inteiro':['Inteiro','','Inteiro'],
-            'literal':['literal','','literal'],
+            'int':['int','','int'],
+            'lit':['lit','','lit'],
             'real':['real','','real']
         }
 
@@ -186,7 +186,7 @@ class Lexical(object):
                         token.append(self.count_line)   # Append new line
                         token.append(self.count_column) # Append new column
                 # ---------------If isn't a comment-----------------------------
-                if (token[0] != 'Comentario'):return token
+                if token[0] != 'Comentario':return token
 
 
     #---------------- Print erro's message--------------------------------------

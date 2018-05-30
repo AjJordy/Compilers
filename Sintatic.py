@@ -2,9 +2,15 @@ from Lexical import Lexical
 import pandas as pd
 
 
-def recovery(a):
-    # TODO recovery
-    print("\nError before of line "+str(a[3])+" in column "+str(a[4]))
+def recovery(a,s):
+    erros = pd.read_csv('error.csv', index_col=0)
+    print("\nErro sintático na linha "+str(a[3])+" na coluna "+str(a[4]))
+
+    if not pd.isnull(erros.loc[s,'Erro']):
+        print(erros.loc[s,'Erro'])
+    else:
+        print("Estrutura sintática inválida.")
+
 
 def main():
     # Lexical
@@ -47,7 +53,7 @@ def main():
                 break
 
         except:
-            recovery(a)
+            recovery(a,s)
             break
 
 if __name__ == "__main__":

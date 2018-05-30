@@ -1,0 +1,60 @@
+,Erro
+0,Faltou a palavra reservada “inicio”
+1,
+2,Faltou a palavra reservada “varinicio”
+3,
+4,Faltou a palavra reservada “varinicio” ou um id
+5,
+6,Faltou a palavra reservada “varfim” ou um id
+7,"Faltou determinar o tipo “int”, “real” ou “lit”"
+8,Faltou ponto e virgula “ ; ”
+9,
+10,
+11,Faltou um id
+12,"Faltou determinar o argumento “literal”, “num” ou “id”"
+13,
+14,
+15,
+16,Faltou abrir parênteses “ ( ”
+17,Faltou a palavra reservada “fim”
+18,Faltou o “ ← ”
+19,
+20,Faltou ponto e virgula “ ; ”
+21,Faltou ponto e virgula “ ; ”
+22,Faltou ponto e virgula “ ; ”
+23,Faltou ponto e virgula “ ; ”
+24,Faltou ponto e virgula “ ; ”
+25,Faltou ponto e virgula “ ; ”
+26,Faltou ponto e virgula “ ; ”
+27,
+28,Faltou informar id ou numero
+29,Faltou ponto e virgula “ ; ”
+30,
+31,
+32,
+33,Faltou ponto e virgula “ ; ”
+34,Faltou fechar parênteses “ ) ”
+35,Faltou ponto e virgula “ ; ”
+36,Faltou ponto e virgula “ ; ”
+37,Faltou informar id ou numero
+38,
+39,
+40,
+41,
+42,
+43,
+44,
+45,
+46,
+47,
+48,Faltou operador relacional
+49,Faltou informar id ou numero
+50,Faltou a palavra reservada “entao”
+51,Faltou ponto e virgula “ ; ”
+52,
+53,
+54,Faltou operador matemático
+55,Faltou informar id ou numero
+56,
+57,
+58,

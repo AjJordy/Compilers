@@ -48,19 +48,19 @@ class Lexical(object):
         # -----------------------Table of outputs-------------------------------
         self.states = {
             1: ['Num','int'],# final
-            2: ["erro"],
-            3: ["erro"],
-            4: ["erro"],
+            2: ["erro",''],
+            3: ["erro",''],
+            4: ["erro",''],
             5: ['Num','real'],# final
             6: ['Num','real'],# final
-            7: ["erro"],
-            8: ["erro"],
+            7: ["erro",''],
+            8: ["erro",''],
             9: ['literal',''],# final
             10:['id',''],# final
-            11:["erro"],
-            12:["erro"],
+            11:["erro",''],
+            12:["erro",''],
             13:['Comentario',''],# final
-            14:["erro"],
+            14:["erro",''],
             15:['OPR',''], # final
             16:['OPR',''], # final
             17:['OPR',''], # final
@@ -73,7 +73,7 @@ class Lexical(object):
             24:['FC_P',''],# final
             25:['PT_V',''], # final
             26:['EOF',''],
-            30:'erro'
+            30:['erro','']
         }
 
         # ---------------------------Table of errors----------------------------
@@ -126,12 +126,12 @@ class Lexical(object):
         self.buffer = ""
         token = []
         while(True):
-            self.position = self.f.tell() # read position
-            self.content = self.f.read(1) # read one letter
+            self.position = self.f.tell()  # read position
+            self.content = self.f.read(1)  # read one letter
             self.count_column += 1
 
             # -------------------- Verify the symbol---------------------------
-            if(self.content in [' ','\t','\n','\\']):
+            if self.content in [' ', '\t', '\n', '\\']:
                 symbol = "whitespace"
             elif(self.content):
                 try:
@@ -140,6 +140,8 @@ class Lexical(object):
                     token.append(self.content)
                     token.append(self.states[30])
                     token.append(self.errors[30])
+                    token.append(self.count_line)
+                    token.append(self.count_column)
                     return token
             else:
                 symbol = "EOF"
@@ -148,13 +150,13 @@ class Lexical(object):
             try:
                 self.state = self.table[self.state][symbol]
                 # Ignore whitespaces, but not in comment and literal
-                if (self.state in [7,8,11,12]):
+                if self.state in [7, 8, 11, 12]:
                     self.buffer += self.content
                 elif not(symbol == "whitespace"):
                     self.buffer += self.content
 
                 # If new line, update line and column
-                if(self.content in ['\n'] and not self.state in [7,8,11,12]):
+                if self.content in ['\n'] and not self.state in [7, 8, 11, 12]:
                     self.count_line += 1
                     self.count_column = 1
             except:
@@ -163,30 +165,33 @@ class Lexical(object):
                 self.count_column -= 1
 
                 #----------------- if state isn't final-------------------------
-                if(token[0] == "erro"):
+                if token[0] == "erro":
                     self.print_error()
                     token.append(self.errors[self.state])
                 #----------------- if state is final----------------------------
                 else:
                     token.append(self.buffer)
-                    if(token[0] == 'id'):
+                    if token[0] == 'id':
                         # ----------If aready exist in symbols_table------------
-                        if(self.buffer in self.symbols_table):
+                        if self.buffer in self.symbols_table:
                             temp = self.symbols_table[self.buffer][:]
-                            if (len(temp) > 3): # Have old lines and column
+                            if len(temp) > 3:   # Have old lines and column
                                 temp.pop()      # Remove last line
                                 temp.pop()      # Romeve last column
-                            temp.append(self.count_line)   # Append new line
-                            temp.append(self.count_column) # Append new column
+                            temp.append(str(self.count_line))    # Append new line
+                            temp.append(str(self.count_column))  # Append new column
                             return temp
                         #----------- If does't exist in symbols_table-----------
                         else:
                             self.symbols_table[self.buffer] = token
-                    else:
-                        token.append(self.count_line)   # Append new line
-                        token.append(self.count_column) # Append new column
+                    # else:
+                        # token.append(self.count_line)    # Append new line
+                        # token.append(self.count_column)  # Append new column
                 # ---------------If isn't a comment-----------------------------
-                if token[0] != 'Comentario':return token
+                if token[0] != 'Comentario':
+                    token.append(self.count_line)  # Append new line
+                    token.append(self.count_column)  # Append new column
+                    return token
 
 
     #---------------- Print erro's message--------------------------------------

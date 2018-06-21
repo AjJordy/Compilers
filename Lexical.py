@@ -22,9 +22,9 @@ class Lexical(object):
             'senao':['senao','','senao'],
             'fimse':['fimse','','fimse'],
             'fim':['fim','','fim'],
-            'int':['int','','int'],
-            'lit':['lit','','lit'],
-            'real':['real','','real']
+            'int':['int','int','int'],
+            'lit':['lit','lit','lit'],
+            'real':['real','real','real']
         }
 
         # ----------------------Table of symbols capable to read----------------
@@ -41,7 +41,7 @@ class Lexical(object):
             '0':'D','1':'D','2':'D','3':'D','4':'D','5':'D','6':'D','7':'D','8':'D','9':'D',
             # Symbols
             '\"':'\"','.':'.',',':',','_':'_','+':'+','-':'-','{':'{','}':'}','=':'=',
-            '>':'>','<':'<','*':'*','/':'/',';':';','(':'(',')':')',':':':','\\':'\\',
+            '>':'>','<':'<','*':'*','/':'/',';':';','(':'(',')':')',':':':','\\':'whitespace',
             'whitespace':'whitespace'
         }
 
@@ -96,7 +96,7 @@ class Lexical(object):
                 'EOF':26,'whitespace':0},
             1:{'D':1,'E':3,'e':3,'.':2}, # final
             2:{'D':6},
-            3:{'+':4, '-':4, 'D':5 },
+            3:{'+':4, '-':4, 'D':5},
             4:{'D':5},
             5:{'D':5}, # final
             6:{'D':6,'E':3,'e':3}, # final
@@ -131,7 +131,7 @@ class Lexical(object):
             self.count_column += 1
 
             # -------------------- Verify the symbol---------------------------
-            if self.content in [' ', '\t', '\n', '\\']:
+            if self.content in [' ', '\t', '\n']:
                 symbol = "whitespace"
             elif(self.content):
                 try:

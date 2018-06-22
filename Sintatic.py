@@ -23,20 +23,21 @@ def pop(pilha,tamanho):
 # -----------------------------  Tradução dirigida  ------------------------------------
 # Numero da produção, arquivo final, pilha semântica, objeto lexico, token não terminal, lista da produção
 def semantic(prod,file,ss,lx,token,lenght):
-    lista = pop(ss,lenght+1)
+    resto = ss[-lenght:]
+    ss = ss[:-lenght]
     if prod is 5:
         file.write("\n\n\n")
     elif prod is 6:
-        lx.symbols_table[lista[-lenght-1][2]][1] = lista[-lenght][1]  # id.tipo <- TIPO.tipo
-        file.write(lista[-lenght][1]," ",lx.symbols_table[lista[-lenght-1][2]][2],";\n")  # Imprimir ( TIPO.tipo id.lexema ; )
+        lx.symbols_table[ss[-1][2]][1] = ss[-lenght][1]  # id.tipo <- TIPO.tipo
+        file.write("\t"+ss[-lenght-1][1]+" "+ss[-lenght][2]+";\n")   # Imprimir ( TIPO.tipo id.lexema ; )
     elif prod is 7:
-        token[1] = lista[-lenght][1]  # TIPO.tipo <- int.tipo
+        token[1] = ss[-lenght][1]  # TIPO.tipo <- int.tipo
         ss.append(token)
     elif prod is 8:
-        token[1] = lista[-lenght][1]  # TIPO.tipo <- real.tipo
+        token[1] = ss[-lenght][1]  # TIPO.tipo <- real.tipo
         ss.append(token)
     elif prod is 9:
-        token[1] = lista[-lenght][1]  # TIPO.tipo <- lit.tipo
+        token[1] = ss[-lenght][1]  # TIPO.tipo <- lit.tipo
         ss.append(token)
     elif prod is 11:
         if ss[-1][1] is not '':
@@ -49,24 +50,26 @@ def semantic(prod,file,ss,lx,token,lenght):
         else:
             print("\nErro: Variável não declarada\n")
     elif prod is 12:
-        file.write("\tprintf(",ss[-1][2],");\n")
+        print(lenght)
+        print(str(ss))
+        file.write("\tprintf("+ss[-lenght][2]+");\n\t")
     elif prod is 13:
-        token[1:] = ss.pop()[1:]      # ARG.atributos <- literal.atributos
+        token[1:] = ss[-1][1:]   # ARG.atributos <- literal.atributos
+        print("new "+str(token))
         ss.append(token)
     elif prod is 14:
-        token[1:] = ss.pop()[1:]      # ARG.atributos <- num.atributos
+        token[1:] = ss[-1][1:]      # ARG.atributos <- num.atributos
         ss.append(token)
     elif prod is 15:
         if ss[-1][1] is not '':
-            token[1:] = ss.pop()[1:]  # ARG.atributos <- id.atributos
+            token[1:] = ss[-1][1:]  # ARG.atributos <- id.atributos
             ss.append(token)
         else:
             print("\nErro: Variável não declarada\n")
     elif prod is 17:
         if ss[-1][1] is not '':
-            lista = pop(ss,lenght)
-            if lista[2][1] is lista[1][1]:
-                file.write(lista[0][1]," ",lista[1][1]," ",lista[2][1])  # id.lexema rcb.tipo LD.lexema
+            if ss[-lenght][1] is ss[-lenght-1][1]:
+                file.write(lenght[-lenght][1]+" "+lenght[-lenght-1][1]+" "+lenght[-lenght-2][1])  # id.lexema rcb.tipo LD.lexema
             else:
                 print("\nErro: Tipos diferentes para atribuição\n")
         else:
@@ -74,24 +77,24 @@ def semantic(prod,file,ss,lx,token,lenght):
     # elif prod is 18:
 
     elif prod is 19:
-        LD = ss.pop()  # LD.atributos <- OPRD.atributos
+        LD = ss[-1]  # LD.atributos <- OPRD.atributos
         ss.append(LD)
     elif prod is 20:
         if ss[-1][1] is not '':
-            token[1:] = ss.pop()[1:]  # OPRD.atributos <- id.atributos
+            token[1:] = ss[-1][1:]  # OPRD.atributos <- id.atributos
             ss.append(token)
         else:
             print("\nErro: Variável não declarada.\n")
     elif prod is 21:
-        token[1:] = ss.pop()[1:]  # OPRD.atributos <- num.atributos
+        token[1:] = ss[-1][1:]  # OPRD.atributos <- num.atributos
         ss.append(token)
     elif prod is 23:
         file.write("}\n")
     elif prod is 24:
-        lista = pop(ss, lenght)   # CABEÇALHO <- se ( EXP_R ) entao
-        file.write("if(",lista[2][2],"){\n")
+        # CABEÇALHO <- se ( EXP_R ) entao
+        file.write("\tif("+ss[-lenght][2]+"){\n\t")
     # elif prod is 25:
-
+    return ss
 
 
 # ------------------------ Inicializa o arquivo em linguagem C ---------------------------------
@@ -121,7 +124,7 @@ def main():
     #------------------Sintatic algorithm - Shift Reduce------------------------
     a = lx.next_token()
     while True:
-        try:
+        #try:
             s = stack[-1]                           # Seja s o estado no topo da pilha
             #print(a)
             # --------------------- Shift t ------------------------------------
@@ -146,21 +149,22 @@ def main():
                 ''' ---- Semantic ----- '''
                 token = [produtions.loc[int(prod),'non_terminal'],'','']  # token não terminal
                 print(token)
-                semantic(prod,file,ss,lx,token,lenght)
+                print(prod)
+                ss = semantic(prod,file,ss,lx,token,lenght)
 
             # -------------------------- Accept -------------------------------
             elif ACTION.loc[s, a[0]] == 'accept':
                 file.close()
                 break
 
-        except:
-            print("\nSintatic error at line " + str(a[3]) + " at column " + str(a[4]), "\n")
-            # a = panic(a,lx)
-            # if a is 'end':
-            #     break
-            # else:
-            #     continue
-            break
+        # except:
+        #     print("\nSintatic error at line " + str(a[3]) + " at column " + str(a[4]), "\n")
+        #     # a = panic(a,lx)
+        #     # if a is 'end':
+        #     #     break
+        #     # else:
+        #     #     continue
+        #     break
 
 
 if __name__ == "__main__":

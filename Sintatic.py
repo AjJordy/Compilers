@@ -29,7 +29,7 @@ def semantic(prod,file,ss,lx,token,lenght,T):
     ss.append(token)
 
     if prod is 5:
-        file.write("\n\n\n")
+        file.write("\n")
     elif prod is 6:
         lx.symbols_table[resto[0][2]][1] = resto[1][1]  # id.tipo <- TIPO.tipo
         file.write("\t"+resto[1][1]+" "+resto[0][2]+";\n")   # Imprimir ( TIPO.tipo id.lexema ; )
@@ -52,8 +52,8 @@ def semantic(prod,file,ss,lx,token,lenght,T):
     elif prod is 12:
         file.write("\tprintf("+resto[-2][1]+");\n")
     elif prod is 13:
-        token[1:] = resto[-1][2:]   # ARG.atributos <- literal.atributos
-        print("new "+str(token))
+        ss[-1][1:] = resto[-1][2:]   # ARG.atributos <- literal.atributos
+        #print("new "+str(token))
     elif prod is 14:
         print(lenght)
         print("\n\nResto " + str(resto))
@@ -71,40 +71,54 @@ def semantic(prod,file,ss,lx,token,lenght,T):
                 print("\nErro: Tipos diferentes para atribuição\n")
         else:
             print("\nErro: Variável não declarada\n")
-    #elif prod is 18:
-
+    elif prod is 18:
+        if resto[-3][1] == resto[-1][1] and resto[-1][1] is not "lit":
+            Tn = str(resto[-3][2])+str(resto[-2][2])+str(resto[-1][2])
+            T.append(Tn)
+            ss[-1][2] = Tn
+            file.write("\tT" + str(len(T)) + " = " + Tn + ";\n")
+        else:
+            print("\nErro: Operandos com tipos incompatíveis\n")
 
     elif prod is 19:
         ss[-1][1:] = ss[-2][1:]  # LD.atributos <- OPRD.atributos
     elif prod is 20:
         if resto[-1][1] is not '':
-            token[1:] = resto[-1][1:]  # OPRD.atributos <- id.atributos
+            ss[-1][1:] = resto[-1][1:]  # OPRD.atributos <- id.atributos
         else:
             print("\nErro: Variável não declarada.\n")
     elif prod is 21:
-        token[1:] = ss[-2][1:]  # OPRD.atributos <- num.atributos
+        ss[-1][1:] = resto[-1][1:]  # OPRD.atributos <- num.atributos
     elif prod is 23:
-        file.write("}\n")
+        file.write("\t}\n")
     elif prod is 24:
-        # CABEÇALHO <- se ( EXP_R ) entao
-        file.write("\tif("+resto[-3][2]+"){\n\t")
+        file.write("\tif(T"+str(len(T))+"){\n\t")  # CABEÇALHO <- se ( EXP_R ) entao
     elif prod is 25:
-        if resto[-3][1] == resto[-1][1]:
-            Tx = str(resto[-3][1])+str(resto[-2][2])+str(resto[-1][1])
+        if resto[-3][1] == resto[-1][1] and resto[-1][1] is not "lit":
+            Tx = str(resto[-3][2])+str(resto[-2][2])+str(resto[-1][2])
             T.append(Tx)
             ss[-1][2] = Tx
-            file.write(Tx)
+            file.write("\tT"+str(len(T))+" = "+Tx+";\n")
         else:
             print("\nErro: Operandos com tipos incompatíveis\n")
-
     return ss,T
 
 
 # ------------------------ Inicializa o arquivo em linguagem C ---------------------------------
-def initFile():
-    file = open("PROGRAMA.c","w")
-    file.write("#include<stdio.h>\ntypedef char literal[256];\n\nvoid main(void){\n\t/*----Variaveis temporarias----*/\n")
+def initFile(T):
+
+    with open("PROGRAMA.c","r") as f:
+        data = f.readlines()
+
+    with open("PROGRAMA.c","w") as file:
+        file.write("#include<stdio.h>\ntypedef char literal[256];"
+                   "\n\nvoid main(void){\n\t/*----Variaveis temporarias----*/\n")
+        for i in range(len(T)):
+            file.write("\tint T"+str(i+1)+";\n")
+        file.write("\t/*---------------------------*/\n")
+        file.writelines(data)
     return file
+
 
 
 def main():
@@ -123,7 +137,8 @@ def main():
     T = []  # Variáveis temporárias
 
     # Final source
-    file = initFile()
+    file = open("PROGRAMA.c", "w")
+
 
     #------------------Sintatic algorithm - Shift Reduce------------------------
     a = lx.next_token()
@@ -161,6 +176,7 @@ def main():
             # -------------------------- Accept -------------------------------
             elif ACTION.loc[s, a[0]] == 'accept':
                 file.close()
+                initFile(T)
                 break
 
         # except:
